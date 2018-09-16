@@ -26,6 +26,10 @@
                 layout.cells("b").setText("Contract Details");
                 layout.cells("b").setWidth(500);
 
+                var contactForm = layout.cells("b").attachForm();
+                contactForm.loadStruct("data/form.xml");
+                contactForm.bind(contactsGrid);
+
                 var menu = layout.attachMenu();
                 menu.setIconsPath("icons/");
                 menu.loadStruct("data/menu.xml");
@@ -33,15 +37,50 @@
                 toolbar.setIconsPath("icons/");
                 toolbar.loadStruct("data/toolbar.xml")
 
+                var dpg = new dataProcessor("data/contacts.php");         //inits dataProcessor
+                dpg.init(contactsGrid);   //associates the dataProcessor instance with the grid
+                dpg.attachEvent("onAfterUpdate", function(sid, action, tid, tag){
+                    if (action == "inserted"){
+                        contactsGrid.selectRowById(tid);        //selects the newly-created row
+                        contactForm.setFocusOnFirstActive();//set focus to the 1st form's input
+                    }
+                });
+
                 contactsGrid.setHeader("Name,Last Name,Email");   //sets the headers of columns
                 contactsGrid.setColumnIds("fname,lname,email");         //sets the columns' ids
                 contactsGrid.setInitWidths("250,250,*");   //sets the initial widths of columns
                 contactsGrid.setColAlign("left,left,left");     //sets the alignment of columns
                 contactsGrid.setColTypes("ro,ro,ro");               //sets the types of columns
                 contactsGrid.setColSorting("str,str,str");  //sets the sorting types of columns
+                contactsGrid.attachHeader("#text_filter,#text_filter,#text_filter");
                 contactsGrid.init();
 
-                contactsGrid.load("data/contacts.php");      //takes the path to your data feed
+                contactForm.attachEvent("onButtonClick", function(name){
+                    contactForm.save();     //sends the values of the updated row to the server
+                });
+
+                toolbar.attachEvent("onclick",function(id){
+                    if(id=="newContact"){
+                        var rowId=contactsGrid.uid();
+                        var pos = contactsGrid.getRowsNum();
+                        contactsGrid.addRow(rowId,["New contact","",""],pos);
+                        contactsGrid.selectRowById(rowId);
+                        contactForm.setFocusOnFirstActive();
+                    };
+                    if(id=="delContact"){
+                        var rowId = contactsGrid.getSelectedRowId();
+                        var rowIndex = contactsGrid.getRowIndex(rowId);
+                        if(rowId!=null){
+                            contactsGrid.deleteRow(rowId);
+                            if(rowIndex!=(contactsGrid.getRowsNum()-1)){
+                                contactsGrid.selectRow(rowIndex+1,true);
+                            } else{
+                                contactsGrid.selectRow(rowIndex-1,true)
+                            }
+                        }
+                    }
+
+                //contactsGrid.load("data/contacts.php");      //takes the path to your data feed
 
             });
 		</script>
