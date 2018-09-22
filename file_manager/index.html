@@ -1,12 +1,58 @@
 <html>
 <head>
     <title>File manager</title>
+
+    <style>
+        html, body {
+            width: 100%;      /*provides the correct work of a full-screen layout*/
+            height: 100%;     /*provides the correct work of a full-screen layout*/
+            overflow: hidden; /*hides the default body's space*/
+            margin: 0px;      /*hides the body's scrolls*/
+        }
+    </style>
+
     <script src="codebase/dhtmlx.js"></script>
     <link rel="stylesheet" type="text/css" href="codebase/dhtmlx.css">
 </head>
 <body>
 <script>
-    //the code of your application
+    dhtmlxEvent(window,"load",function(){
+        var myLayout = new dhtmlXLayoutObject(document.body,"2U");
+
+        var myTree = myLayout.cells("a").attachTree();
+        myTree.setImagesPath("codebase/imgs/dhxtree_terrace/");
+        //myTree.load("data/treeStruct.xml");
+
+        myLayout.cells("a").setWidth(250);
+        myLayout.cells("a").setText("Files");
+        myLayout.cells("b").hideHeader();
+
+        var myToolbar = myLayout.attachToolbar();
+        myToolbar.setIconsPath("icons/");
+        myToolbar.loadStruct("data/toolbarStruct.xml");
+
+        var myGrid = myLayout.cells("b").attachGrid();
+
+        myGrid.setImagePath("codebase/imgs/");    //sets the path to the source images
+        myGrid.setIconsPath("icons/");                //sets the path to custom images
+        myGrid.setHeader("&nbsp;,Name,Type,Modified,id");     //sets the header labels
+        myGrid.setColTypes("img,ro,ro,ro,ro");             //sets the types of columns
+        myGrid.setInitWidths("70,250,100,*,0");   //sets the initial widths of columns
+        myGrid.setColAlign("center,left,left,left");   //sets the horizontal alignment
+        myGrid.init();
+        //myGrid.load("data/gridData.xml");
+
+        myTree.attachEvent("onSelect",  function(id){ //id -the id of the selected item
+            myGrid.filterBy(4,id);
+            return true;
+        });
+
+        myTree.load("data/treeStruct.xml",function(){            //callback function
+            myGrid.load("data/gridData.xml", function(){            //callback function
+                myTree.selectItem("books");   //makes 'books' folder selected initially
+            })
+        });
+    });
 </script>
 </body>
 </html>
